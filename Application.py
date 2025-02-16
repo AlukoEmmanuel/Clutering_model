@@ -32,7 +32,7 @@ spending_score = st.sidebar.number_input(
 )
 
 # Prediction API URL
-API_URL = "http://127.0.0.1:8000/predict"  # Replace with your live API endpoint
+API_URL = "http://127.0.0.1:8005/predict"  # Replace with your live API endpoint
 
 # Single Prediction
 if st.sidebar.button("Predict Customer Segment"):
