@@ -2,6 +2,19 @@ import streamlit as st
 import requests
 import pandas as pd
 import plotly.express as px
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Get the BASE_URL from the environment; fallback to localhost if not set
+base_url = os.getenv("BASE_URL")
+if not base_url:
+    base_url = "http://127.0.0.1:8005"
+
+# Construct the API endpoint for prediction
+API_URL = f"{base_url}/predict"
 
 # App Configuration
 st.set_page_config(
@@ -31,9 +44,6 @@ spending_score = st.sidebar.number_input(
     "Spending Score (1-100):", min_value=1, max_value=100, step=1, value=50
 )
 
-# Prediction API URL
-API_URL = "http://127.0.0.1:8005/predict"  # Replace with your live API endpoint
-
 # Single Prediction
 if st.sidebar.button("Predict Customer Segment"):
     input_data = {"annual_income": annual_income, "spending_score": spending_score}
@@ -41,14 +51,17 @@ if st.sidebar.button("Predict Customer Segment"):
         response = requests.post(API_URL, json=input_data)
         if response.status_code == 200:
             cluster = response.json()["cluster"]
+            # Update these names to match the clusters returned by your API
             cluster_names = {
-                1: "Luxury Loyalists",
-                2: "Frugal Followers",
-                3: "Balanced Buyers",
-                4: "Impulsive Shoppers",
-                5: "Thrifty Opportunists"
+                0: "Prudent spenders",
+                1: "Generous Spenders",
+                2: "Extravagant Spenders",
+                3: "Wise Spenders",
+                4: "Loose Spenders"
             }
-            st.success(f"🎉 The customer belongs to **Cluster {cluster}: {cluster_names[cluster]}**.")
+            # Fallback in case the cluster doesn't match any key
+            cluster_label = cluster_names.get(cluster, "Unknown Cluster")
+            st.success(f"🎉 The customer belongs to **Cluster {cluster}: {cluster_label}**.")
         else:
             st.error("Failed to fetch prediction. Check the API endpoint.")
     except Exception as e:
@@ -77,12 +90,13 @@ if uploaded_file:
                     predictions.append(None)
 
             df["Cluster"] = predictions
+            # Update these names to match the clusters returned by your API
             cluster_names = {
-                1: "Luxury Loyalists",
-                2: "Frugal Followers",
-                3: "Balanced Buyers",
-                4: "Impulsive Shoppers",
-                5: "Thrifty Opportunists"
+                0: "Prudent spenders",
+                1: "Generous Spenders",
+                2: "Extravagant Spenders",
+                3: "Wise Spenders",
+                4: "Loose Spenders"
             }
             df["Cluster Name"] = df["Cluster"].map(cluster_names)
 
@@ -118,9 +132,9 @@ st.markdown("---")
 st.markdown("""
 **Developed by [Aluko Emmanuel](#)** | Powered by **Streamlit** 🚀  
 **Customer Segmentation Names**:
-- **Luxury Loyalists**: High-income, high-spending customers.  
-- **Frugal Followers**: Low-income, low-spending customers.  
-- **Balanced Buyers**: Middle-income, moderate-spending customers.  
-- **Impulsive Shoppers**: Trend-driven customers with spontaneous purchases.  
-- **Thrifty Opportunists**: Strategic spenders seeking value.  
+- **Prudent spenders**: Cluster 0.  
+- **Generous Spenders**: Cluster 1.  
+- **Extravagant Spenders**: Cluster 2.  
+- **Wise Spenders**: Cluster 3.  
+- **Loose Spenders**: Cluster 4.  
 """)
